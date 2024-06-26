@@ -30,7 +30,15 @@ $$
 `NeuralSimulator` implements a simulation of a neural system as described by the article "Network modelling methods for FMRI" by Smith et al (2011). The causal diagram is:
 
 $$
-\text{input signal} \\ \downarrow \\  \text{spike counts} \leftarrow \text{neural activity} \to \text {bold signal}
+\text{input signal}
+$$
+
+$$
+\downarrow
+$$
+
+$$
+\text{spike counts} \leftarrow \text{neural activity} \to \text {bold signal}
 $$
 
 
@@ -40,7 +48,7 @@ so called binary `input_signals` (across a suitable number of independent channe
 `neural_activity` across a specified number of neural regions is then generated in response to these input signals using a discrete time linear differential equation of the form:
 
 $$
-y_{t+1} = y_t + \left[\bold{A}y_{t-1} + \bold{C}x_{t-1} + \mathcal{N}(0, \sigma_r)\right]
+y_{t+1} = y_t + \left[\mathbf{A}y_{t-1} + \mathbf{C}x_{t-1} + \mathcal{N}(0, \sigma_r)\right]
 $$
 
 Where $\mathbf{A}$ is a neuron-neuron connectivity matrix, and $\mathbf{C}$ defines how each input channel is sent to each neuron. 
