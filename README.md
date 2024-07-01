@@ -6,13 +6,15 @@ Simulate timeseries data that can be used to evaluate transfer entropy (TE) esti
 
 ### 1) Bivariate Linear Gaussian System
 
-`BVLinearGaussianSimulator` implements a simple stochastic coupled system with the following causal graph:
+`BVLinearGaussianSimulator` implements a simple stochastic coupled system from https://doi.org/10.1063/5.0053519
+
+- Causal graph:
 
 $$
 Y \to X
 $$
 
-The equations that define the system are:
+- Equations:
 
 $$
 \begin{align*}
@@ -25,7 +27,35 @@ $$
 
 -----
 
-### 2) Neural System
+### 2) Bivariate Joint Process System
+
+`BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277
+
+- Causal graph:
+
+$$
+X \to Y
+$$
+
+- Equations:
+
+$$
+\begin{align*}
+			z_{t+1} &= \mathcal{N}(0, 1) \\
+			x_{t+1} &= \mathcal{N}(0, \rho) \\
+			y_{t+1} &= 
+			\begin{cases}
+				z_{t+1} \text{if } y_{t} < \lambda \\
+				x_{t} + z_{t}\sqrt{1-\rho^2}
+			\end{cases}
+\end{align*}
+$$
+
+- Optimal solution: Both $T_{X\to Y}$ and $T_{Y \to X}$ have closed form solutions, which are accessible using the `analytic_transfer_entropy` method. A good TE estimator will yield $\hat{T}_{X\to Y}$ and $\hat{T}_{Y\to X}$ close to the analytic values.
+
+-----
+
+### 3) Neural System
 
 `NeuralSimulator` implements a simulation of a neural system as described by the article "Network modelling methods for FMRI" by Smith et al (2011). The causal diagram is:
 

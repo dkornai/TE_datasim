@@ -8,5 +8,6 @@ setup(
     author='Daniel Kornai',
     install_requires=[
         'numpy>=1.20',
+        'scipy>=1.10'
     ]
 )
