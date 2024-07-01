@@ -4,7 +4,7 @@ Simulate timeseries data that can be used to evaluate transfer entropy (TE) esti
 
 ## Currently implemented models:
 
-### 1) Bivariate Linear Gaussian System
+### 1.1) Bivariate Linear Gaussian System
 
 `BVLinearGaussianSimulator` implements a simple stochastic coupled system from https://doi.org/10.1063/5.0053519
 
@@ -24,6 +24,20 @@ $$
 $$
 
 - Optimal solution: Both $T_{X\to Y}$ and $T_{Y \to X}$ have closed form solutions, which are accessible using the `analytic_transfer_entropy` method. A good TE estimator will yield $\hat{T}_{X\to Y}$ and $\hat{T}_{Y\to X}$ close to the analytic values.
+
+-----
+
+### 1.2) Multivariate Linear Gaussian System
+
+`MVLinearGaussianSimulator` implements `n_dim` independent channels of the bivariate linear Gaussian system, allowing for the simulation of vector valued time series data.
+
+- Causal graph:
+
+$$
+Y \to X
+$$
+
+- Optimal solution: Both $T_{X\to Y}$ and $T_{Y \to X}$ have closed form solutions, which are accessible using the `analytic_transfer_entropy` method. As the channels are independent, this is simply the sum of the TEs for each channel.
 
 -----
 
