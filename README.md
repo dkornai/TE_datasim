@@ -41,7 +41,7 @@ $$
 
 -----
 
-### 2) Bivariate Joint Process System
+### 2.1) Bivariate Joint Process System
 
 `BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277
 
@@ -66,6 +66,20 @@ $$
 $$
 
 - Optimal solution: Both $T_{X\to Y}$ and $T_{Y \to X}$ have closed form solutions, which are accessible using the `analytic_transfer_entropy` method. A good TE estimator will yield $\hat{T}_{X\to Y}$ and $\hat{T}_{Y\to X}$ close to the analytic values.
+
+-----
+
+### 2.2) Multivariate Linear Gaussian System
+
+`MVJointProcessSimulator` implements `n_dim` independent channels of the joint process system, allowing for the simulation of vector valued time series data.
+
+- Causal graph:
+
+$$
+X \to Y
+$$
+
+- Optimal solution: Both $T_{X\to Y}$ and $T_{Y \to X}$ have closed form solutions, which are accessible using the `analytic_transfer_entropy` method. As the channels are independent, this is simply the sum of the TEs for each channel.
 
 -----
 
