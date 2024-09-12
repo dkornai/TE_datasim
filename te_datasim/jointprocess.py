@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.stats import norm
+from baseclass import Simulator
 
-class BVJointProcessSimulator():
+class BVJointProcessSimulator(Simulator):
     """
     BiVariate Linear Gaussian Simulator
     DAG: X -> Y
@@ -37,20 +38,6 @@ class BVJointProcessSimulator():
         assert isinstance(seed, int)
 
         np.random.seed(seed) # set random seed for reproducibility
-
-        # z=np.random.normal(0, 1, time+1)
-        # x=np.random.normal(0, 1, time)     
-        # pz = np.sqrt(1-self.rho*self.rho)*z
-        # px = self.rho*x
-        # y=np.zeros(time+1)
-        # p=norm(0, 1).cdf(self.lam)
-        # for i in range(time):
-        #     y[i+1] = np.average([z[i+1], px[i]+pz[i+1]], weights=[p, 1-p])
-                
-        # y_ts=y[0:time]
-        # Y=y_ts.reshape(-1,1)
-    
-        # X=x.reshape(-1,1)
 
         z=np.random.normal(0, 1, time+1)
         x=np.random.normal(0, 1, time)     
@@ -107,7 +94,7 @@ class BVJointProcessSimulator():
             return 0.0
         
 
-class MVJointProcessSimulator():
+class MVJointProcessSimulator(Simulator):
     """
     MultiVariate Linear Gaussian Simulator
     DAG: X -> Y

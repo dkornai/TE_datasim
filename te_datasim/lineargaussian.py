@@ -1,6 +1,7 @@
 import numpy as np
+from baseclass import Simulator
 
-class BVLinearGaussianSimulator():
+class BVLinearGaussianSimulator(Simulator):
     """
     BiVariate Linear Gaussian Simulator
     DAG: Y -> X
@@ -122,9 +123,8 @@ class BVLinearGaussianSimulator():
         elif var_from == 'X' and var_to == 'Y':
             return 0.0
         
-import numpy as np
 
-class MVLinearGaussianSimulator():
+class MVLinearGaussianSimulator(Simulator):
     """
     MultiVariate Linear Gaussian Simulator (X and Y are vector valued)
     DAG: Y -> X 

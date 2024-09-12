@@ -1,5 +1,5 @@
-
 import numpy as np
+from baseclass import Simulator
 
 def downsample(time_series, factor):
     """
@@ -269,7 +269,7 @@ def simulate_neural_spiking(
 
 
 
-class NeuralSimulator():
+class NeuralSimulator(Simulator):
     """
     Simulate various types of neural data.
     """
@@ -356,6 +356,8 @@ class NeuralSimulator():
         assert samplerate in [1, 2, 5, 10], "samplerate must be one of 1, 2, 5 or 10"
         self.samplerate = samplerate
 
+        self.variables = ['input_signals', 'neural_activity', 'bold_signal', 'spike_counts']
+
     def simulate(self, time, seed):
         """
         Simulates input, resulting neural activity and resulting BOLD signal and spiking activity.
@@ -412,3 +414,29 @@ class NeuralSimulator():
             bold_signal += np.random.normal(0, self.random_bold_error, size=bold_signal.shape)
 
         return input_signals, neural_activity, bold_signal, spike_counts
+    
+    def analytic_transfer_entropy(
+            self, 
+            var_from:   str, 
+            var_to:     str):
+        """
+        Calculate the transfer entropy between the input signals and the neural activity.
+        Only 0 transfer entropies are known with complete certainty, others will raise not implemented errors.
+        """
+        assert var_from in self.variables, f"var_from must be in {self.variables}"
+        assert var_to in self.variables, f"var_to must be in {self.variables}"
+        assert var_from != var_to, "var_from and var_to must be different variables"
+
+        if var_from == 'spike_counts' and var_to == 'neural_activity':
+            return 0.0
+        elif var_from == 'spike_counts' and var_to == 'input_signals':
+            return 0.0
+        elif var_from == 'bold_signal' and var_to == 'neural_activity':
+            return 0.0
+        elif var_from == 'bold_signal' and var_to == 'input_signals':
+            return 0.0
+        elif var_from == 'neural_activity' and var_to == 'input_signals':
+            return 0.0
+        else:
+            raise NotImplementedError("Analytic TE not known for this pair of variables")
+         
