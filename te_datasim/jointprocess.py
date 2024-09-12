@@ -38,16 +38,31 @@ class BVJointProcessSimulator():
 
         np.random.seed(seed) # set random seed for reproducibility
 
+        # z=np.random.normal(0, 1, time+1)
+        # x=np.random.normal(0, 1, time)     
+        # pz = np.sqrt(1-self.rho*self.rho)*z
+        # px = self.rho*x
+        # y=np.zeros(time+1)
+        # p=norm(0, 1).cdf(self.lam)
+        # for i in range(time):
+        #     y[i+1] = np.average([z[i+1], px[i]+pz[i+1]], weights=[p, 1-p])
+                
+        # y_ts=y[0:time]
+        # Y=y_ts.reshape(-1,1)
+    
+        # X=x.reshape(-1,1)
+
         z=np.random.normal(0, 1, time+1)
-        x=np.random.normal(0, self.rho, time)     
-        zp=np.random.normal(0, np.sqrt(1-self.rho*self.rho), time+1)
+        x=np.random.normal(0, 1, time)     
+        pz = np.sqrt(1-self.rho*self.rho)*z
+        px = self.rho*x
         y=np.zeros(time+1)
         
         for i in range(time):
             if y[i]<self.lam:
                 y[i+1]=z[i+1]
             else:
-                y[i+1]=x[i]+zp[i+1]  
+                y[i+1]=px[i]+pz[i+1]  
                 
         y_ts=y[0:time]
         Y=y_ts.reshape(-1,1)
@@ -98,12 +113,14 @@ class MVJointProcessSimulator():
     DAG: X -> Y
 
     Simply a wrapper for multiple independent BVJointProcessSimulator instances
+    however, n_redunant_dim can be specified to add independent dimensions to the system that do not transfer information
     """
-    def __init__(self, rho = 0.9, lam = 0.0, n_dim=None):
+    def __init__(self, rho = 0.9, lam = 0.0, n_dim=None, n_redundant_dim=0):
         if all (isinstance(i, float) for i in [rho, lam]):
             assert n_dim is not None, 'n_dim must be specified as the number of independent duplicate dimensions if all parameters are floats'
             assert isinstance(n_dim, int)
             assert n_dim > 0
+            assert n_redundant_dim >= 0, 'n_redundant_dim must be a non-negative integer'
 
             rho = [rho]*n_dim
             lam = [lam]*n_dim
@@ -112,7 +129,8 @@ class MVJointProcessSimulator():
             assert len(rho) == len(lam), 'rho and lam must have the same length'
             n_dim = len(rho)
 
-        self.n_dim = n_dim
+        self.n_dim = n_dim - n_redundant_dim
+        self.n_redundant_dim = n_redundant_dim
 
         # parameters of the linear system
         self.rho = rho
@@ -154,6 +172,10 @@ class MVJointProcessSimulator():
             x_i, y_i = self.jp_simulators[i].simulate(time, seed+i)
             X[:, i] = x_i.flatten()
             Y[:, i] = y_i.flatten()
+
+        if self.n_redundant_dim > 0:
+            X = np.hstack([X, np.random.normal(0, 1, (time, self.n_redundant_dim))])
+            Y = np.hstack([Y, np.random.normal(0, 1, (time, self.n_redundant_dim))])
         
         return X, Y
     

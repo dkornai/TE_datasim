@@ -131,11 +131,12 @@ class MVLinearGaussianSimulator():
 
     System is simply n_dim independent instances of the BVLinearGaussianSimulator
     """
-    def __init__(self, coupling = 0.5, b_x = 0.8, b_y = 0.4, var_x = 0.2, var_y = 0.2, n_dim = None):
+    def __init__(self, coupling = 0.5, b_x = 0.8, b_y = 0.4, var_x = 0.2, var_y = 0.2, n_dim = None, n_redundant_dim = 0):
         if all(isinstance(i, float) for i in [coupling, b_x, b_y, var_x, var_y]):
             assert n_dim is not None, 'n_dim must be specified as the number of independent duplicate dimensions if all parameters are floats'
             assert isinstance(n_dim, int)
             assert n_dim > 0
+            assert n_redundant_dim >= 0
             coupling = [coupling] * n_dim
             b_x = [b_x] * n_dim
             b_y = [b_y] * n_dim
@@ -146,7 +147,8 @@ class MVLinearGaussianSimulator():
             assert len(coupling) == len(b_x) == len(b_y) == len(var_x) == len(var_y), 'all parameters must have the same length'
             n_dim = len(coupling)
         
-        self.n_dim = n_dim
+        self.n_dim = n_dim - n_redundant_dim
+        self.n_redundant_dim = n_redundant_dim
 
         # parameters of the linear system, list holds parameters for each independent process
         self.coupling_arr = coupling
@@ -190,6 +192,10 @@ class MVLinearGaussianSimulator():
             x_i, y_i = self.bv_simulators[i].simulate(time, seed+i)
             X[:, i] = x_i.flatten()
             Y[:, i] = y_i.flatten()
+
+        if self.n_redundant_dim > 0:
+            X = np.hstack([X, np.random.normal(0, 1, (time, self.n_redundant_dim))])
+            Y = np.hstack([Y, np.random.normal(0, 1, (time, self.n_redundant_dim))])
 
         return  X, Y
     

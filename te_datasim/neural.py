@@ -246,16 +246,24 @@ def simulate_bold_signal(
 
 def simulate_neural_spiking(
         time_points:        np.ndarray, 
-        neural_activity:    np.ndarray
+        neural_activity:    np.ndarray,
+        rates:              np.ndarray,
+        baseline:           np.ndarray,
         ) ->                np.ndarray:
     """
-    Simulates spiking activity given neural activity.
+    Simulates spiking activity given neural activity, firing rate multipliers and baseline rates.
+
+    The rate of spiking is calculated as:
+    rate = exp(neural_activity*3 + baseline) * rates * dt
+
     """
     dt = time_points[1] - time_points[0]
 
+
     spikes = np.zeros_like(neural_activity)
-    for i in range(neural_activity.shape[1]):
-        spikes[:, i] = np.random.poisson(neural_activity[:, i]*dt)
+    for i in range(neural_activity.shape[0]):
+        rate = np.exp((neural_activity[i]*3)+baseline)*rates*dt
+        spikes[i] = np.random.poisson(rate)
 
     return spikes
 
@@ -269,16 +277,18 @@ class NeuralSimulator():
             self, 
             A:                  np.ndarray, 
             C:                  np.ndarray,
+            r:                  np.ndarray|None=None,
+            b:                  np.ndarray|None=None,
+            sigma:              float=1.0,
             mean_duration_up:   float=2.5,
             mean_duration_down: float=10.0,
-            sigma:              float=1.0,
-            samplerate:         int=1,
             neur_rand_scale:    float=0.0,
-            random_bold_error:  float=0.0
+            random_bold_error:  float=0.0,
+            samplerate:         int=1,
             ):
         
         """
-        Initializes a neural simulator.
+        Initializes a neural simulator instance with a set of parameters.
         
         Parameters:
         -----------
@@ -286,18 +296,22 @@ class NeuralSimulator():
             the 2d neural connectivity matrix mapping neurons to each other
         C : np.ndarray
             the 2d matrix mapping external input channels to each neuron
+        r : np.ndarray|None
+            firing rate multiplier vector for each neuron, defaults to 1 for all neurons if None
+        b : np.ndarray|None
+            baseline firing rate vector (bias) for each neuron, defaults to 0 for all neurons if None
+        sigma : float
+            the timescale of the system
         mean_duration_up : float
             mean duration for "up" state
         mean_duration_down : float
             mean duration for "down" state
-        sigma : float
-            the timescale of the system
-        samplerate : int
-            the rate at which to sample the signals
         neur_rand_scale : float
             the amount of random noise to add to the neural activity
         random_bold_error : float
             the amount of random noise to add to the BOLD signal
+        samplerate : int
+            the rate at which to sample the signals
         """
         
         assert isinstance(A, np.ndarray), "A must be a numpy array"
@@ -309,6 +323,23 @@ class NeuralSimulator():
         assert C.shape[0] == self.n_neurons, "C must have the same number of rows as A"
         self.C = C
         self.n_inputs = C.shape[1]
+        
+        if r is None:
+            r = np.ones(self.n_neurons)
+        else:
+            assert isinstance(r, np.ndarray), "r must be a numpy array"
+            assert r.shape[0] == self.n_neurons, "r must have the same size as the number of neurons"
+        self.r = r
+
+        if b is None:
+            b = np.zeros(self.n_neurons)
+        else:
+            assert isinstance(b, np.ndarray), "b must be a numpy array"
+            assert b.shape[0] == self.n_neurons, "b must have the same size as the number of neurons"
+        self.b = b
+
+        assert sigma > 0, "sigma must be greater than 0"
+        self.sigma = sigma
 
         assert mean_duration_up > 0, "mean_duration_up must be greater than 0"
         self.mean_duration_up = mean_duration_up
@@ -316,17 +347,14 @@ class NeuralSimulator():
         assert mean_duration_down > 0, "mean_duration_down must be greater than 0"
         self.mean_duration_down = mean_duration_down
 
-        assert sigma > 0, "sigma must be greater than 0"
-        self.sigma = sigma
-        
-        assert samplerate in [1, 2, 5, 10], "samplerate must be one of 1, 2, 5 or 10"
-        self.samplerate = samplerate
-
         assert neur_rand_scale >= 0, "neur_rand_scale must be greater than or equal to 0"
         self.neur_rand_scale = neur_rand_scale
 
         assert random_bold_error >= 0, "random_bold_error must be greater than or equal to 0"
         self.random_bold_error = random_bold_error
+
+        assert samplerate in [1, 2, 5, 10], "samplerate must be one of 1, 2, 5 or 10"
+        self.samplerate = samplerate
 
     def simulate(self, time, seed):
         """
@@ -355,7 +383,7 @@ class NeuralSimulator():
             the spike counts for each neuron
         """
 
-        SAMPLERATE = 10  # Hz
+        SAMPLERATE = 10  # 10 Hz sampling rate is used internally, to avoid issues with the forward euler solver for the BOLD signal
         DOWNSAMPLE = int(SAMPLERATE/self.samplerate)
 
         time_points = np.linspace(0, time, int(time*SAMPLERATE)+1)
@@ -364,13 +392,13 @@ class NeuralSimulator():
         input_signals   = generate_poisson_input(time_points, self.n_inputs, self.mean_duration_up, self.mean_duration_down, seed)
         
         # Simulate neural dynamics
-        neural_activity = simulate_neural_dynamics(time_points, self.n_neurons, input_signals, self.sigma, self.A, self.C, self.neur_rand_scale)
+        neural_activity = simulate_neural_dynamics(time_points, input_signals, self.sigma, self.A, self.C, self.neur_rand_scale)
         
         # Simulate BOLD signal
         bold_signal     = simulate_bold_signal(time_points, neural_activity)
 
         # Simulate spiking activity
-        spike_counts    = simulate_neural_spiking(time_points, neural_activity)
+        spike_counts    = simulate_neural_spiking(time_points, neural_activity, self.r, self.b)
 
         # Downsample to 1 Hz
         input_signals   = downsample(input_signals,  DOWNSAMPLE)
