@@ -12,9 +12,9 @@ The `Simulator` class represents the data generating process. The data generatin
 
 The `Simulator`  class has three methods, corresponding to the three major steps in the workflow.
 
-1) initialise an instance of a given simulator sub-class. This specifies the numeric parameters for the generative process. 
+1) initialise an instance of a given simulator sub-class. This specifies the numeric parameters for the generative process, and the strength of the causal interactions. 
 
-2) generate data using the `.simulate(time=, seed=)` method, which returns a tuple of numpy arrays, each corresponding to an observed time series for a given system variable. 
+2) generate data using the `.simulate(time=, seed=)` method, which returns a tuple of numpy arrays, each corresponding to an observed time series for a given system variable. These arrays are each of size [time $\times$ vardim]. 
 
 3) (optional) get a reference analytically computed TE, using the `.get_analytic_transfer_entropy(source=, dest=)` method
 
@@ -57,7 +57,7 @@ to use, import via `from te_datasim.lineargaussian import MVLinearGaussianSimula
 
 ### 2) Bivariate Joint Process System
 
-`BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277 To use, import via `from te_datasim.jointprocess import BVJpointProcessSimulator`.
+`BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277 To use, import via `from te_datasim.jointprocess import BVJointProcessSimulator`.
 
 - Causal graph:
 
@@ -89,7 +89,7 @@ $$
 
 The data can also be concatenated with a further `n_redundant_dim` of i.i.d. noise, which, should leave the true TE unchanged.
 
-to use, import via `from te_datasim.lineargaussian import MVLinearGaussianSimulator`. 
+to use, import via `from te_datasim.jointprocess import MVJointProcessSimulator`. 
 
 -----
 
