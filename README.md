@@ -2,6 +2,10 @@
 
 Simulate timeseries data that can be used to evaluate transfer entropy (TE) estimation methods. 
 
+## Installation:
+
+`te_datasim` is an installable python package. Clone the repository, navigate to the cloned directory, and then use `pip install .` to install. Dependencies are  `numpy` and `scipy` only.
+
 ## General Workflow:
 
 The `Simulator` class represents the data generating process. The data generating process has two or more random variables [which each may be 1D or multi-D]. The causal relationships between the variables have fixed direction, but controllable strength. The strength of this interaction is measured by transfer entropy.
@@ -20,7 +24,7 @@ Use your transfer entropy estimator of choice on the generated dataset, and comp
 
 ### 1) Bivariate Linear Gaussian System
 
-`BVLinearGaussianSimulator` implements a simple stochastic coupled system from https://doi.org/10.1063/5.0053519
+`BVLinearGaussianSimulator` implements a simple stochastic coupled system from https://doi.org/10.1063/5.0053519 To use, import via `from te_datasim.lineargaussian import BVLinearGaussianSimulator`. 
 
 - Causal graph:
 
@@ -47,11 +51,13 @@ $$
 
 The data can also be concatenated with a further `n_redundant_dim` of i.i.d. noise, which, should leave the true TE unchanged. 
 
+to use, import via `from te_datasim.lineargaussian import MVLinearGaussianSimulator`
+
 -----
 
 ### 2) Bivariate Joint Process System
 
-`BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277
+`BVJointProcessSimulator` implements a simple stochastic joint process system from https://doi.org/10.48550/arXiv.1912.07277 To use, import via `from te_datasim.jointprocess import BVJpointProcessSimulator`.
 
 - Causal graph:
 
@@ -82,6 +88,8 @@ $$
 `MVJointProcessSimulator` implements `n_dim` independent channels of the bivariate linear Gaussian system, allowing for the simulation of vector valued time series data. Transfer entropy scales linearly with `n_dim`.
 
 The data can also be concatenated with a further `n_redundant_dim` of i.i.d. noise, which, should leave the true TE unchanged.
+
+to use, import via `from te_datasim.lineargaussian import MVLinearGaussianSimulator`. 
 
 -----
 
@@ -116,5 +124,7 @@ A `bold_signal` (corresponding to an fMRI readout for a given neural area) is si
 Finally, binned `spike_counts` are also generated using a non-homogenous poisson process with rates scaled by the neural activity. 
 
 Closed form solutions for the TEs of this system are generally not known precisely, however, the causal diagram should at least specify which TE values should be positive, and which should be 0.
+
+To use, import via `from te_datasim.neural import NeuralSimulator`
 
 -----
